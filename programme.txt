@@ -1,0 +1,9 @@
+PROGRAMME exemple;
+    VAR nb;
+    DEBUT
+        ECRIRE('début...');
+        LIRE(nb);
+        nb := nb*nb;
+        ECRIRE('la valeur de la variable au carré est : ', nb);
+        ECRIRE();
+    FIN.
