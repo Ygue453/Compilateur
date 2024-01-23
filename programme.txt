@@ -7,3 +7,4 @@ PROGRAMME exemple;
         ECRIRE('la valeur de la variable au carré est : ', nb);
         ECRIRE();
     FIN.
+    hi llll
