@@ -3,7 +3,7 @@ PROGRAMME exemple;
     DEBUT
         ECRIRE('début...');
         LIRE(nb);
-        nb := nb*nb;
-        ECRIRE('la valeur de la variable au carré est : ', nb);
+        nb := nb + 2 + 10;
+        ECRIRE('la valeur de la variable + 2 est : ', nb);
         ECRIRE();
     FIN.
