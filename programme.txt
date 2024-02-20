@@ -1,9 +1,10 @@
 PROGRAMME exemple;
-    VAR nb;
+    VAR nb, 2v;
+    {gggghhg{iiii}hh}
     DEBUT
         ECRIRE('début...');
         LIRE(nb);
         nb := nb*nb;
-        ECRIRE('la valeur de la variable au carré est : ', nb);
+        ECRIRE('la valeur de la varia''ble au carré est : ', nb);
         ECRIRE();
     FIN.

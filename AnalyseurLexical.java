@@ -17,43 +17,38 @@ public class AnalyseurLexical {
     public int NUM_LIGNE;
     public MotReserve[] TABLE_MOTS_RESERVES = new MotReserve[NB_MOTS_RESERVES];
 
-    File file = new File("./programme.txt");
-    BufferedReader br;
+    private static boolean finDeFichier = false;
+    private BufferedReader br;
+    
+    public AnalyseurLexical(){
+        SOURCE = new File("./programme.txt");
+    }
 
 
-    /*public static void main(String[] args) throws IOException {
-        if (args.length == 1){
-            INITIALISER();
+    public void main() throws IOException {
+        INITIALISER();
 
-            File file = new File(args[0]);
-            SOURCE = file;
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            int c;
-            while ((c = br.read()) != -1) {
-                CARLU = (char) c;
-                System.out.print(CARLU);
-                if (Character.isDigit(CARLU)){
-                    b = true;
-                }
-                else if (b){
-                    System.out.print("[nombre]");
-                    b = false;
-                }
-            }
-            System.out.println("");
+        TEST();
+
+        TERMINER();
+    }
+
+    private void TEST() throws IOException{
+        LIRE_CAR();
+        while (!finDeFichier) {
+            T_UNILEX tUnilex = ANALEX();
+            System.out.println(CHAINE + " -> " + tUnilex);
         }
-        else{
-            System.out.println(Integer.MAX_VALUE);
-        }
-    }*/
+        
+    }
 
     //Recense tout les messages d'erreurs et les associes à des numéros
     public void ERREUR(int nb_err){
         switch (nb_err) {
             case 1:
                 System.err.println("Erreur 1 : fin de fichier atteinte");
-                break;
-        
+                finDeFichier = true;
+                break;        
             default:
                 break;
         }
@@ -65,7 +60,7 @@ public class AnalyseurLexical {
         int read = br.read();
         if (read > 0){
             CARLU = (char) read;
-            if (CARLU == '\n'){
+            if (CARLU == '\n' || CARLU == '\r'){
                 NUM_LIGNE++;
             }
         }
@@ -73,7 +68,7 @@ public class AnalyseurLexical {
             ERREUR(1);
         }
         else {
-            //TODO : erreur probleme de lecture n°?
+            System.out.println("TODO : erreur probleme de lecture n°?");
         }
     }
 
@@ -85,17 +80,20 @@ public class AnalyseurLexical {
                 LIRE_CAR();
             }
         }
-        else if (CARLU == ' ' || CARLU == '\t' || CARLU == '\n'){
+        else if (CARLU == ' ' || CARLU == '\t' || CARLU == '\n' || CARLU == '\r'){
             // saute les espaces, tabulations et fin de lignes
             LIRE_CAR();
-            while (CARLU == ' ' || CARLU == '\t' || CARLU == '\n'){
+            while (CARLU == ' ' || CARLU == '\t' || CARLU == '\n' || CARLU == '\r'){
                 LIRE_CAR();
             }
+        }
+        if (CARLU == '{'){
+            SAUTER_SEPARATEURS();
         }
     }
 
     //Reconnait les nombres entiers
-    public void RECO_ENTIER() throws IOException{
+    public T_UNILEX RECO_ENTIER() throws IOException{
         int nb = Integer.parseInt(CARLU + "");
         LIRE_CAR();
         while (Character.isDigit(CARLU)) {
@@ -103,23 +101,30 @@ public class AnalyseurLexical {
             LIRE_CAR();
         }
         if (nb > 32767){
-            //TODO : erreur nombre trop grand n°?
+            System.out.println("TODO : erreur nombre trop grand n°?");
             //ERREUR(?);
         }
+        else { NOMBRE = nb; }
+        CHAINE = NOMBRE + "";
+        return T_UNILEX.ent;
     }
 
     //Reconnait les chaines de caractères
-    public void RECO_CHAINE() throws IOException{
+    public T_UNILEX RECO_CHAINE() throws IOException{
         String string = "";
         LIRE_CAR();
-        while ((CARLU + "") != "'"){
+        do {
             string = string + CARLU;
             LIRE_CAR();
         }
+        while (CARLU != '\'');
+
         if (string.length() > LONG_MAX_CHAINE){
-            //TODO : erreur chaine de caractères trop grande n°?
+            System.out.println("TODO : erreur chaine de caractères trop grande n°?");
         }
         CHAINE = string;
+        LIRE_CAR();
+        return T_UNILEX.ch;
     }
 
     //Reconnait un identificateur ou un mot réservé et l'affecte à CARLU
@@ -139,7 +144,7 @@ public class AnalyseurLexical {
 
     private boolean EST_UN_MOT_RESERVE(){
         for (int i = 0; i < NB_MOTS_RESERVES; i++){
-            if (CHAINE == TABLE_MOTS_RESERVES[i].getMot()){
+            if (CHAINE.compareTo(TABLE_MOTS_RESERVES[i].getMot()) == 0){
                 return true;
             }
         }
@@ -149,77 +154,98 @@ public class AnalyseurLexical {
     //Reconnait un symbole simple ou composé
     //Renvoie l'unité lexical correspondante
     public T_UNILEX RECO_SYMB() throws IOException{
+        CHAINE = CARLU + "";
         switch (CARLU) {
             case ',':
+                LIRE_CAR();
                 return T_UNILEX.virg;
 
             case ';':  
+                LIRE_CAR();
                 return T_UNILEX.ptvirg;
 
             case '.':
+                LIRE_CAR();
                 return T_UNILEX.point; 
 
             case ':':
                 LIRE_CAR();
                 if(CARLU == '='){
+                    CHAINE = CHAINE + CARLU;
+                    LIRE_CAR();
                     return T_UNILEX.aff;
                 }
+                LIRE_CAR();
                 return T_UNILEX.deuxpts; 
 
             case '(':
+                LIRE_CAR();
                 return T_UNILEX.parouv; 
 
             case ')':
+                LIRE_CAR();
                 return T_UNILEX.parfer; 
 
             case '<':
                 LIRE_CAR();
                 if ( CARLU == '='){
+                    CHAINE = CHAINE + CARLU;
+                    LIRE_CAR();
                     return T_UNILEX.infe;
                 }
                 if (CARLU == '>'){
+                    CHAINE = CHAINE + CARLU;
+                    LIRE_CAR();
                     return T_UNILEX.diff;
                 }
+                LIRE_CAR();
                 return T_UNILEX.inf; 
 
             case '>':
                 LIRE_CAR();
                 if ( CARLU == '='){
+                    CHAINE = CHAINE + CARLU;
+                    LIRE_CAR();
                     return T_UNILEX.supe;
                 }
+                LIRE_CAR();
                 return T_UNILEX.sup; 
             
             case '=':
+                LIRE_CAR();
                 return T_UNILEX.eg; 
 
             case '+':
+                LIRE_CAR();
                 return T_UNILEX.plus; 
 
             case '-':
+                LIRE_CAR();
                 return T_UNILEX.moins; 
 
             case '*':
+                LIRE_CAR();
                 return T_UNILEX.mult; 
 
             case '/':
+                LIRE_CAR();
                 return T_UNILEX.divi;
         
             default:
-                //TODO: erreur caractère non reconnue n°?;
+                System.out.println("TODO: erreur caractère non reconnue n°?;");
         }
         return null;
     }
 
     //Reconnait l'unité lexical dans le fichier source
     public T_UNILEX ANALEX() throws IOException{
+        CHAINE = "";
         SAUTER_SEPARATEURS();
         if (Character.isDigit(CARLU)){
-            RECO_ENTIER();
-            return T_UNILEX.ent;
+            return RECO_ENTIER();
         }
-        else if((CARLU + "") == "'"){
-            RECO_CHAINE();
-            return T_UNILEX.ch;
+        else if(CARLU == '\''){
+            return RECO_CHAINE();
         }
         else if (Character.isAlphabetic(CARLU)){
             return RECO_IDENT_OU_MOT_RESERVE();
@@ -240,7 +266,7 @@ public class AnalyseurLexical {
         TABLE_MOTS_RESERVES[5] = new MotReserve("PROGRAMME");
         TABLE_MOTS_RESERVES[6] = new MotReserve("VAR");
 
-        br = new BufferedReader(new FileReader(file));
+        br = new BufferedReader(new FileReader(SOURCE));
     }
 
     //Effectue les instructions de fin de programme
