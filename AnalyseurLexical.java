@@ -71,14 +71,23 @@ public class AnalyseurLexical {
             System.out.println("TODO : erreur probleme de lecture n°?");
         }
     }
-
+    
     //Lit des caractères jusqu'à ce que le commentaire, les espaces, les sauts de lignes ou les tabulations soit passés
     public void SAUTER_SEPARATEURS() throws IOException{
         if (CARLU == '{'){
             //saute les commentaires
-            while (CARLU != '}') {
+            int counter = 1;
+            //si les commentaire imbriqué sont autorisés
+            while (counter > 0){
                 LIRE_CAR();
+                if (CARLU == '{'){
+                    counter++;
+                }
+                if (CARLU == '}'){
+                    counter--;
+                }
             }
+            LIRE_CAR();
         }
         else if (CARLU == ' ' || CARLU == '\t' || CARLU == '\n' || CARLU == '\r'){
             // saute les espaces, tabulations et fin de lignes
@@ -87,7 +96,7 @@ public class AnalyseurLexical {
                 LIRE_CAR();
             }
         }
-        if (CARLU == '{'){
+        if (CARLU == '{' || CARLU == ' ' || CARLU == '\t' || CARLU == '\n' || CARLU == '\r'){
             SAUTER_SEPARATEURS();
         }
     }
@@ -116,6 +125,15 @@ public class AnalyseurLexical {
         do {
             string = string + CARLU;
             LIRE_CAR();
+            if (CARLU == '\''){
+                LIRE_CAR();
+                if (CARLU == '\''){
+                    LIRE_CAR();
+                }
+                else {
+                    break;
+                }
+            }
         }
         while (CARLU != '\'');
 
@@ -123,7 +141,6 @@ public class AnalyseurLexical {
             System.out.println("TODO : erreur chaine de caractères trop grande n°?");
         }
         CHAINE = string;
-        LIRE_CAR();
         return T_UNILEX.ch;
     }
 
