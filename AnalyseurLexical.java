@@ -77,7 +77,7 @@ public class AnalyseurLexical {
         if (CARLU == '{'){
             //saute les commentaires
             int counter = 1;
-            //si les commentaire imbriqué sont autorisés
+            //si les commentaire imbriqués sont autorisé
             while (counter > 0){
                 LIRE_CAR();
                 if (CARLU == '{'){
