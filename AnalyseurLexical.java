@@ -16,30 +16,27 @@ public class AnalyseurLexical {
     public String CHAINE;
     public int NUM_LIGNE;
     public MotReserve[] TABLE_MOTS_RESERVES = new MotReserve[NB_MOTS_RESERVES];
+    public T_TAB tab;
 
-    private static boolean finDeFichier = false;
     private BufferedReader br;
     
     public AnalyseurLexical(){
         SOURCE = new File("./programme.txt");
+        tab = new T_TAB();
     }
 
-
-    public void main() throws IOException {
-        INITIALISER();
-
-        TEST();
-
-        TERMINER();
-    }
-
-    private void TEST() throws IOException{
+    public void TEST() throws IOException{
         LIRE_CAR();
-        while (!finDeFichier) {
-            T_UNILEX tUnilex = ANALEX();
+        T_UNILEX tUnilex;
+        while (CARLU != '.') {
+            tUnilex = ANALEX();
+            if (tUnilex == T_UNILEX.ident && tab.chercher(CHAINE) == -1){
+                tab.inserer(CHAINE, new T_IDENT(CHAINE));
+            }
             System.out.println(CHAINE + " -> " + tUnilex);
         }
-        
+        tUnilex = ANALEX();
+        System.out.println(CHAINE + " -> " + tUnilex);
     }
 
     //Recense tout les messages d'erreurs et les associes à des numéros
@@ -47,7 +44,6 @@ public class AnalyseurLexical {
         switch (nb_err) {
             case 1:
                 System.err.println("Erreur 1 : fin de fichier atteinte");
-                finDeFichier = true;
                 break;        
             default:
                 break;
@@ -128,6 +124,7 @@ public class AnalyseurLexical {
             if (CARLU == '\''){
                 LIRE_CAR();
                 if (CARLU == '\''){
+                    string = string + CARLU;
                     LIRE_CAR();
                 }
                 else {
