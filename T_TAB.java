@@ -17,7 +17,7 @@ public class T_TAB {
         return -1;
     }
 
-    public int inserer(String name, T_IDENT ident){
+    public int INSERER(String name, T_IDENT ident){
         hashMap.put(name, ident);
         return CHERCHER(name);
     }
