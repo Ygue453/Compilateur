@@ -33,6 +33,9 @@ public class AnalyseurLexical {
             if (tUnilex == T_UNILEX.ident && tab.CHERCHER(CHAINE) == -1){
                 tab.INSERER(CHAINE, new T_IDENT(CHAINE));
             }
+            else if (tab.CHERCHER(CHAINE) != -1){
+                System.out.println("Erreur : déclaration ident impossible, ligne : " + this.NUM_LIGNE);
+            }
             System.out.println(CHAINE + " -> " + tUnilex);
         }
         tUnilex = ANALEX();
@@ -48,6 +51,7 @@ public class AnalyseurLexical {
             default:
                 break;
         }
+        TERMINER();
     }
 
     //Lit un caractère est l'affecte à CARLU, incrémente NUM_LIGNE a chaque saut de ligne
