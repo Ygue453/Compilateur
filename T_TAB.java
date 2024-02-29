@@ -4,7 +4,7 @@ import java.util.Map;
 public class T_TAB {
     private static HashMap<String, T_IDENT> hashMap = new HashMap<>();
 
-    public int chercher(String name){
+    public int CHERCHER(String name){
         if (hashMap.containsKey(name)){
             int index = 0;
             for (String string : hashMap.keySet()){
@@ -19,10 +19,10 @@ public class T_TAB {
 
     public int inserer(String name, T_IDENT ident){
         hashMap.put(name, ident);
-        return chercher(name);
+        return CHERCHER(name);
     }
 
-    public void afficher(){
+    public void AFFICHE_TABLE_IDENT(){
         for (Map.Entry entry : hashMap.entrySet()){
             System.out.println(entry.getKey() + " ident : " + entry.getValue());
         }

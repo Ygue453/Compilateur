@@ -30,7 +30,7 @@ public class AnalyseurLexical {
         T_UNILEX tUnilex;
         while (CARLU != '.') {
             tUnilex = ANALEX();
-            if (tUnilex == T_UNILEX.ident && tab.chercher(CHAINE) == -1){
+            if (tUnilex == T_UNILEX.ident && tab.CHERCHER(CHAINE) == -1){
                 tab.inserer(CHAINE, new T_IDENT(CHAINE));
             }
             System.out.println(CHAINE + " -> " + tUnilex);

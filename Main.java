@@ -8,6 +8,6 @@ public class Main{
         analyseurLexical.TEST();
         analyseurLexical.TERMINER();
 
-        analyseurLexical.tab.afficher();
+        analyseurLexical.tab.AFFICHE_TABLE_IDENT();
     }
 }
