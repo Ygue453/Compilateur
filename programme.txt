@@ -8,3 +8,4 @@ PROGRAMME exemple;
         ECRIRE('la valeur de la varia''ble au c''arré est : ', nb);
         ECRIRE();
     FIN.
+IDENT 
