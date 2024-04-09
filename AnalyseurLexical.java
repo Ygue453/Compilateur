@@ -20,7 +20,7 @@ public class AnalyseurLexical {
 
     private BufferedReader br;
     
-    public AnalyseurLexical(){
+    public AnalyseurLexical(String filePath){
         SOURCE = new File("./programme.txt");
         tab = new T_TAB();
     }
