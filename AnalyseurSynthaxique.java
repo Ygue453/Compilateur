@@ -163,7 +163,7 @@ public class AnalyseurSynthaxique {
                 System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", = attendu");
                 return false;
             }
-            System.out.println("Erreur sémentique, ligne : " + al.NUM_LIGNE + ", identificateur déjà éxistant");
+            System.out.println("Erreur sémentique, ligne : " + al.NUM_LIGNE + ", constante déjà éxistante");
             return false;
         }
         System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT attendu");
@@ -187,6 +187,8 @@ public class AnalyseurSynthaxique {
                     System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", PTVIRG attendu");
                     return false;
                 }
+                System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", variable déjà éxistante");
+                return false;
             }
             System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT attendu");
             return false;
