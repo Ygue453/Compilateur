@@ -87,13 +87,12 @@ public class AnalyseurSynthaxique {
             System.out.println("Le programme est juste synthaxicalement.");
         }
         else{
-            System.out.println("erreur n°3: erreur syntaxique");
+            System.out.println("erreur n°3: erreur synthaxique ou sémantique");
             //ERREUR(3);
         }
     }
 
     private boolean PROG() throws IOException{
-        System.out.println(UNILEX + "/" + al.CHAINE);
         if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("PROGRAMME") == 0){
             if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident){
                 if (al.tab.CHERCHER(al.CHAINE) == -1){
@@ -139,6 +138,7 @@ public class AnalyseurSynthaxique {
                 return false;
             }
             while ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.virg) {
+                UNILEX = al.ANALEX();
                 if (!CONST()){
                     return false;
                 }
@@ -156,15 +156,16 @@ public class AnalyseurSynthaxique {
     private boolean CONST() throws IOException{
         if (UNILEX == AnalyseurLexical.T_UNILEX.ident){
             if (al.tab.CHERCHER(al.CHAINE) == -1){
+                String name_const = al.CHAINE;
                 if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.eg){
                     UNILEX = al.ANALEX();
                     if (UNILEX == AnalyseurLexical.T_UNILEX.ent){
-                        al.tab.INSERER(al.CHAINE, new T_CONST(al.CHAINE, 0, al.NOMBRE));
+                        al.tab.INSERER(name_const, new T_CONST(name_const, 0, al.NOMBRE));
                         al.tab.AFFICHE_TABLE_IDENT();
                         return true;
                     }
                     else if (UNILEX == AnalyseurLexical.T_UNILEX.ch){
-                        al.tab.INSERER(al.CHAINE, new T_CONST(al.CHAINE, 1, al.CHAINE));
+                        al.tab.INSERER(name_const, new T_CONST(name_const, 1, al.CHAINE));
                         al.tab.AFFICHE_TABLE_IDENT();
                         return true;
                     }
@@ -219,23 +220,24 @@ public class AnalyseurSynthaxique {
             if (!INSTRUCTION()){
                 return false;
             }
-            if (UNILEX == AnalyseurLexical.T_UNILEX.ptvirg){
-                UNILEX = al.ANALEX();
-                while (INSTRUCTION()) {
-                    if (!(UNILEX == AnalyseurLexical.T_UNILEX.ptvirg)){
-                        System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ; attendu");
-                        return false;
-                    }
-                    UNILEX = al.ANALEX();
-                    if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("FIN") == 0){
-                        return true;
-                    }
-                }
-            }
             if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("FIN") == 0){
                 return true;
             }
-            System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", FIN attendu");
+            if (!(UNILEX == AnalyseurLexical.T_UNILEX.ptvirg)){
+                System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ; ou FIN attendu");
+                return false;
+            }
+            UNILEX = al.ANALEX();
+            while (INSTRUCTION()) {
+                if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("FIN") == 0){
+                    return true;
+                }
+                if (!(UNILEX == AnalyseurLexical.T_UNILEX.ptvirg)){
+                    System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ; attendu");
+                    return false;
+                }
+                UNILEX = al.ANALEX();
+            }
             return false;
         }
         System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", DEBUT attendu");
@@ -269,8 +271,6 @@ public class AnalyseurSynthaxique {
             int index = al.tab.CHERCHER(al.CHAINE);
             if (index > -1){
                 if (al.tab.hashMap.get(al.CHAINE).getTyp().compareTo("variable") == 0){
-                    al.tab.INSERER(al.CHAINE, new T_VAR(al.CHAINE, DERNIERE_ADRESSE_VAR_GLOB));
-                    DERNIERE_ADRESSE_VAR_GLOB++;
                     if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.aff){
                         UNILEX = al.ANALEX();
                         return EXP();

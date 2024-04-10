@@ -1,9 +1,14 @@
 PROGRAMME exemple;
-    VAR nb;
+    CONST e=25, chaine='je suis une chaine';
+    VAR nb, c;
+
+    {debut du prog}
+
     DEBUT
         ECRIRE('début...');
         LIRE(nb);
-        nb := nb + 2 + 10;
+        nb := 10+chaine;
         ECRIRE('la valeur de la variable + 2 est : ', nb);
-        ECRIRE();
+        ECRIRE()
     FIN.
+    

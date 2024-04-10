@@ -6,5 +6,5 @@ PROGRAMME exemple;
         LIRE(nb);
         nb := nb*nb;
         ECRIRE('la valeur de la varia''ble au c''arré est : ', nb);
-        ECRIRE();
+        ECRIRE()
     FIN.

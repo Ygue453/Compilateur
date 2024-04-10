@@ -23,6 +23,7 @@ public class AnalyseurLexical {
     public AnalyseurLexical(String filePath){
         SOURCE = new File(filePath);
         tab = new T_TAB();
+        NUM_LIGNE = 1;
     }
 
     public void TEST() throws IOException{

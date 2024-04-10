@@ -6,6 +6,7 @@ public class T_IDENT {
     public T_IDENT(String name, String typ, int typc){
         this.name = name;
         this.typ = typ;
+        this.typc = typc;
     }
 
     public String getName(){
