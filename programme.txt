@@ -1,5 +1,5 @@
 PROGRAMME exemple;
-    VAR nb, 2v;
+    VAR nb, v;
     {gggghhg{iiii}hh}
     DEBUT
         ECRIRE('début...');
@@ -8,4 +8,3 @@ PROGRAMME exemple;
         ECRIRE('la valeur de la varia''ble au c''arré est : ', nb);
         ECRIRE();
     FIN.
-IDENT 

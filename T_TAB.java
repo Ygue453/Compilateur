@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class T_TAB {
-    private static HashMap<String, T_IDENT> hashMap = new HashMap<>();
+    static HashMap<String, T_IDENT> hashMap = new HashMap<>();
 
     public int CHERCHER(String name){
         if (hashMap.containsKey(name)){

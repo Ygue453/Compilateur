@@ -6,6 +6,8 @@ public class AnalyseurSynthaxique {
     private AnalyseurLexical.T_UNILEX UNILEX;
     private AnalyseurLexical al;
 
+    private static int DERNIERE_ADRESSE_VAR_GLOB = 0;
+
     /*private ArrayList<String> firstPROG = new ArrayList<>();
     private ArrayList<String> followsPROG = new ArrayList<>();
 
@@ -43,10 +45,9 @@ public class AnalyseurSynthaxique {
     private ArrayList<String> followsOP_BIN = new ArrayList<>();*/
 
     public AnalyseurSynthaxique(AnalyseurLexical analyseurLexical){
-        /*this.al = analyseurLexical;
+        this.al = analyseurLexical;
 
-
-        this.firstPROG.add("PROGRAMME");
+        /*this.firstPROG.add("PROGRAMME");
         this.followsPROG.add(".");
         
         this.firstDECL_CONST.add("CONST");
@@ -80,6 +81,7 @@ public class AnalyseurSynthaxique {
     }
 
     public void ANASYNT() throws IOException{
+        al.LIRE_CAR();
         UNILEX = al.ANALEX();
         if (PROG()){
             System.out.println("Le programme est juste synthaxicalement.");
@@ -91,10 +93,12 @@ public class AnalyseurSynthaxique {
     }
 
     private boolean PROG() throws IOException{
+        System.out.println(UNILEX + "/" + al.CHAINE);
         if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("PROGRAMME") == 0){
             if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident){
                 if (al.tab.CHERCHER(al.CHAINE) == -1){
-                    al.tab.INSERER(al.CHAINE, new T_IDENT(al.CHAINE));
+                    al.tab.INSERER(al.CHAINE, new T_IDENT(al.CHAINE, "identificateur", 0));
+                    al.tab.AFFICHE_TABLE_IDENT();
                     if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ptvirg){
                         UNILEX = al.ANALEX();
                         if (UNILEX == AnalyseurLexical.T_UNILEX.motcle){
@@ -108,10 +112,11 @@ public class AnalyseurSynthaxique {
                             }
                             if (BLOC()){
                                 UNILEX = al.ANALEX();
-                                if (UNILEX == AnalyseurLexical.T_UNILEX.motcle){ return true; }
+                                if (UNILEX == AnalyseurLexical.T_UNILEX.point){ return true; }
                             }
+                            return false;
                         }
-                        System.out.println("Erreur synthaxique, ligne + " + al.NUM_LIGNE + ", CONST, VAR ou BLOC attendu");
+                        System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", CONST, VAR ou BLOC attendu");
                         return false;
                     }
                     System.out.println("Erreur syntaxique, ligne : " + al.NUM_LIGNE + ", PTVIRG attendu");
@@ -151,10 +156,16 @@ public class AnalyseurSynthaxique {
     private boolean CONST() throws IOException{
         if (UNILEX == AnalyseurLexical.T_UNILEX.ident){
             if (al.tab.CHERCHER(al.CHAINE) == -1){
-                al.tab.INSERER(al.CHAINE, new T_CONST(al.CHAINE));
                 if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.eg){
                     UNILEX = al.ANALEX();
-                    if (UNILEX == AnalyseurLexical.T_UNILEX.ent || UNILEX == AnalyseurLexical.T_UNILEX.ch){
+                    if (UNILEX == AnalyseurLexical.T_UNILEX.ent){
+                        al.tab.INSERER(al.CHAINE, new T_CONST(al.CHAINE, 0, al.NOMBRE));
+                        al.tab.AFFICHE_TABLE_IDENT();
+                        return true;
+                    }
+                    else if (UNILEX == AnalyseurLexical.T_UNILEX.ch){
+                        al.tab.INSERER(al.CHAINE, new T_CONST(al.CHAINE, 1, al.CHAINE));
+                        al.tab.AFFICHE_TABLE_IDENT();
                         return true;
                     }
                     System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ENT ou CH attendu");
@@ -174,12 +185,17 @@ public class AnalyseurSynthaxique {
         if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("VAR") == 0){
             if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident){
                 if (al.tab.CHERCHER(al.CHAINE) == -1){
-                    al.tab.INSERER(al.CHAINE, new T_VAR(al.CHAINE));
+                    al.tab.INSERER(al.CHAINE, new T_VAR(al.CHAINE, DERNIERE_ADRESSE_VAR_GLOB));
+                    DERNIERE_ADRESSE_VAR_GLOB++;
                     while ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.virg){
                         if (!((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident)){
                             System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT attendu");
                             return false;
                         }
+                        al.tab.INSERER(al.CHAINE, new T_VAR(al.CHAINE, DERNIERE_ADRESSE_VAR_GLOB));
+                        DERNIERE_ADRESSE_VAR_GLOB++;
+
+                        al.tab.AFFICHE_TABLE_IDENT();
                     }
                     if (UNILEX == AnalyseurLexical.T_UNILEX.ptvirg){
                         return true;
@@ -203,15 +219,17 @@ public class AnalyseurSynthaxique {
             if (!INSTRUCTION()){
                 return false;
             }
-            if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ptvirg){
+            if (UNILEX == AnalyseurLexical.T_UNILEX.ptvirg){
                 UNILEX = al.ANALEX();
                 while (INSTRUCTION()) {
-                    UNILEX = al.ANALEX();
-                    if (!((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ptvirg)){
+                    if (!(UNILEX == AnalyseurLexical.T_UNILEX.ptvirg)){
                         System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ; attendu");
                         return false;
                     }
                     UNILEX = al.ANALEX();
+                    if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("FIN") == 0){
+                        return true;
+                    }
                 }
             }
             if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("FIN") == 0){
@@ -225,7 +243,6 @@ public class AnalyseurSynthaxique {
     }
 
     private boolean INSTRUCTION() throws IOException{
-        UNILEX = al.ANALEX();
         if (UNILEX == AnalyseurLexical.T_UNILEX.ident){
             if (AFFECTATION()){
                 return true;
@@ -235,24 +252,12 @@ public class AnalyseurSynthaxique {
         else if (UNILEX == AnalyseurLexical.T_UNILEX.motcle){
             if (al.CHAINE.compareTo("LIRE") == 0){
                 return LECTURE();
-                /*if (LECTURE()){
-                    return true;
-                }
-                return false;*/
             }
-            else if (al.CHAINE.compareTo("ECIRE") == 0){
+            else if (al.CHAINE.compareTo("ECRIRE") == 0){
                 return ECRITURE();
-                /*if (ECRITURE()){
-                    return true;
-                }
-                return false;*/
             }
             else if (al.CHAINE.compareTo("DEBUT") == 0){
                 return BLOC();
-                /*if (BLOC()){
-                    return true;
-                }
-                return false;*/
             }
         }
         System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT, LIRE, ECRIRE ou DEBUT attendu");
@@ -261,15 +266,22 @@ public class AnalyseurSynthaxique {
 
     private boolean AFFECTATION() throws IOException{
         if (UNILEX == AnalyseurLexical.T_UNILEX.ident){
-            if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.aff){
-                UNILEX = al.ANALEX();
-                return EXP();
-                /*if (EXP()){
-                    return true;
+            int index = al.tab.CHERCHER(al.CHAINE);
+            if (index > -1){
+                if (al.tab.hashMap.get(al.CHAINE).getTyp().compareTo("variable") == 0){
+                    al.tab.INSERER(al.CHAINE, new T_VAR(al.CHAINE, DERNIERE_ADRESSE_VAR_GLOB));
+                    DERNIERE_ADRESSE_VAR_GLOB++;
+                    if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.aff){
+                        UNILEX = al.ANALEX();
+                        return EXP();
+                    }
+                    System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", = attendu");
+                    return false;
                 }
-                return false;*/
+                System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", ne peux pas affecter à une constante");
+                return false;
             }
-            System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", = attendu");
+            System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", variable inéxistante");
             return false;
         }
         System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT attendu");
@@ -288,8 +300,22 @@ public class AnalyseurSynthaxique {
     }
 
     private boolean TERME() throws IOException{
-        if (UNILEX == AnalyseurLexical.T_UNILEX.ent || UNILEX == AnalyseurLexical.T_UNILEX.ident){
+        if (UNILEX == AnalyseurLexical.T_UNILEX.ent){
             return true;
+        }
+        else if (UNILEX == AnalyseurLexical.T_UNILEX.ident){
+            if (al.tab.CHERCHER(al.CHAINE) > -1){
+                if (al.tab.hashMap.get(al.CHAINE).getTyp().compareTo("constante") == 0){
+                    if (al.tab.hashMap.get(al.CHAINE).getTypc() == 0){
+                        return true;
+                    }
+                    System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", la constante doit être de type entier");
+                    return false;
+                }
+                return true;
+            }
+            System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", identificateur inéxistant");
+            return false;
         }
         else if (UNILEX == AnalyseurLexical.T_UNILEX.parouv){
             UNILEX = al.ANALEX();
@@ -306,10 +332,6 @@ public class AnalyseurSynthaxique {
         else if (UNILEX == AnalyseurLexical.T_UNILEX.moins){
             UNILEX = al.ANALEX();
             return TERME();
-            /*if (TERME()){
-                return true;
-            }
-            return false;*/
         }
         System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ENT, IDENT, ( ou - attendu");
         return false;
@@ -331,16 +353,34 @@ public class AnalyseurSynthaxique {
         if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("LIRE") == 0){
             if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.parouv){
                 if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident){
-                    while ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.virg){
-                        if (!((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident)){
-                            System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + "IDENT attendu");
+                    if (al.tab.CHERCHER(al.CHAINE) > -1){
+                        if (al.tab.hashMap.get(al.CHAINE).getTyp().compareTo("variable") == 0){
+                            while ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.virg){
+                                if (!((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.ident)){
+                                    System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + "IDENT attendu");
+                                    return false;
+                                }
+                                if (al.tab.CHERCHER(al.CHAINE) == -1){
+                                    System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", variable inéxistante");
+                                    return false;
+                                }
+                                if (al.tab.hashMap.get(al.CHAINE).getTyp().compareTo("variable") != 0){
+                                    System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", ne peux pas affecter à une constante");
+                                    return false;
+                                }
+                            }
+                            if (UNILEX == AnalyseurLexical.T_UNILEX.parfer){
+                                UNILEX = al.ANALEX();
+                                return true;
+                            }
+                            System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT ou ) attendu");
                             return false;
                         }
+                        System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", ne peux pas affecter à une constante");
+                        return false;
                     }
-                    if (UNILEX == AnalyseurLexical.T_UNILEX.parfer){
-                        return true;
-                    }
-                    System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT ou ) attendu");
+                    System.out.println("Erreur sémantique, ligne : " + al.NUM_LIGNE + ", variable inéxistante");
+                    return false;
                 }
                 System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", IDENT attendu");
                 return false;
@@ -356,13 +396,21 @@ public class AnalyseurSynthaxique {
         if (UNILEX == AnalyseurLexical.T_UNILEX.motcle && al.CHAINE.compareTo("ECRIRE") == 0){
             if ((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.parouv){
                 UNILEX = al.ANALEX();
+                if (UNILEX == AnalyseurLexical.T_UNILEX.parfer){
+                    UNILEX = al.ANALEX();
+                    return true;
+                }
                 while (ECR_EXP()){
+                    if (UNILEX == AnalyseurLexical.T_UNILEX.parfer){
+                        break;
+                    }
                     if (!((UNILEX = al.ANALEX()) == AnalyseurLexical.T_UNILEX.virg)){
                         break;
                     }
                     UNILEX = al.ANALEX();
                 }
                 if (UNILEX == AnalyseurLexical.T_UNILEX.parfer){
+                    UNILEX = al.ANALEX();
                     return true;
                 }
                 System.out.println("Erreur synthaxique, ligne : " + al.NUM_LIGNE + ", ) attendu");
@@ -374,7 +422,8 @@ public class AnalyseurSynthaxique {
     }
 
     private boolean ECR_EXP() throws IOException{
-        if (EXP()){
+        if (UNILEX == AnalyseurLexical.T_UNILEX.ent || UNILEX == AnalyseurLexical.T_UNILEX.ident || UNILEX == AnalyseurLexical.T_UNILEX.parouv || UNILEX == AnalyseurLexical.T_UNILEX.moins){
+            if (EXP())
             return true;
         }
         else if (UNILEX == AnalyseurLexical.T_UNILEX.ch){

@@ -21,7 +21,7 @@ public class AnalyseurLexical {
     private BufferedReader br;
     
     public AnalyseurLexical(String filePath){
-        SOURCE = new File("./programme.txt");
+        SOURCE = new File(filePath);
         tab = new T_TAB();
     }
 
@@ -31,7 +31,7 @@ public class AnalyseurLexical {
         while (CARLU != '.') {
             tUnilex = ANALEX();
             if (tUnilex == T_UNILEX.ident && tab.CHERCHER(CHAINE) == -1){
-                tab.INSERER(CHAINE, new T_IDENT(CHAINE));
+                tab.INSERER(CHAINE, new T_IDENT(CHAINE, "identificateur", 0));
             }
             else if (tab.CHERCHER(CHAINE) != -1){
                 System.out.println("Erreur : déclaration ident impossible, ligne : " + this.NUM_LIGNE);
